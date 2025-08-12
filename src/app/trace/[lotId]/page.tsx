@@ -3,7 +3,7 @@ import TraceabilityView from '@/components/TraceabilityView'
 import Link from 'next/link'
 import { publicClient } from '@/utils/client'
 import { agroTraceContract, certificatesContract, farmNFTContract } from '@/utils/constants'
-import { Address, Hex, parseAbiItem } from 'viem'
+import { Address, Hex } from 'viem'
 import Trace from '@/components/Trace'
 import { getFarmData } from '@/utils/farmData'
 
@@ -39,6 +39,28 @@ export interface LotHeader {
   owner: Address       // "0xf465..."
 }
 
+export interface LotMetadata {
+  name: string
+  description: string
+  image: string
+  attributes: Array<{
+    trait_type: string
+    value: string
+  }>
+}
+
+// LotMeta array structure from contract
+type LotMetaArray = readonly [
+  bigint,    // 0: id
+  Hex,       // 1: harvestId  
+  string,    // 2: product
+  string,    // 3: variety
+  Address,       // 4: owner
+  number,    // 5: amount (0 en el ejemplo)
+  string,    // 6: tokenURI (base64 encoded JSON)
+  boolean    // 7: exists
+]
+
 export interface HarvestHeader {
   farmNftId: bigint          // 1n
   harvestId: Hex   // "0x86bf..."
@@ -69,6 +91,38 @@ export default async function TracePage({ params }: TracePageProps) {
     strict: true
   })
 
+  const LotMeta = await publicClient.readContract({
+    abi: agroTraceContract.abi,
+    address: agroTraceContract.address,
+    functionName: "lot",
+    args: [BigInt(lotId)]
+  }) as LotMetaArray
+  
+  console.log("LotMeta:", LotMeta)
+
+  // Decode metadata from base64 encoded JSON (UTF-8 safe)
+  let lotMetadata: LotMetadata | null = null
+  try {
+    if (LotMeta[6] && LotMeta[6].startsWith('data:application/json;base64,')) {
+      const base64Data = LotMeta[6].replace('data:application/json;base64,', '')
+      
+      // Method 1: Using Buffer (Node.js compatible, handles UTF-8)
+      const decodedJson = Buffer.from(base64Data, 'base64').toString('utf-8')
+      
+      // Alternative Method 2: Using TextDecoder (modern Web API, UTF-8 safe)
+      // const binaryString = atob(base64Data)
+      // const bytes = new Uint8Array(binaryString.length)
+      // for (let i = 0; i < binaryString.length; i++) {
+      //   bytes[i] = binaryString.charCodeAt(i)
+      // }
+      // const decodedJson = new TextDecoder('utf-8').decode(bytes)
+      
+      lotMetadata = JSON.parse(decodedJson) as LotMetadata
+      console.log("Decoded Lot Metadata:", lotMetadata)
+    }
+  } catch (error) {
+    console.error("Error decoding lot metadata:", error)
+  }
 
   console.log("LotMinted Logs:", LotMintedLogs[0].args as LotHeader)
 
@@ -371,6 +425,17 @@ export default async function TracePage({ params }: TracePageProps) {
               lotData={{
                 amount: ArgsLot.amount,
                 owner: ArgsLot.owner
+              }}
+              lotMeta={{
+                id: LotMeta[0],
+                harvestId: LotMeta[1],
+                product: LotMeta[2],
+                variety: LotMeta[3],
+                owner: LotMeta[4],
+                amount: LotMeta[5],
+                tokenURI: LotMeta[6],
+                exists: LotMeta[7],
+                metadata: lotMetadata
               }}
               certificates={CertLogs.map(cert => ({
                 certType: cert.args.certType || '',
