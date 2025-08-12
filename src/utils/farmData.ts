@@ -27,7 +27,7 @@ export async function getFarmData(farmNftId: bigint): Promise<FarmDataResult> {
 
   try {
     const farmArray = result.data as [string, string, string, string, string, string, string]
-    
+
     // Validate array structure
     if (!Array.isArray(farmArray) || farmArray.length < 7) {
       return {
@@ -52,10 +52,10 @@ export async function getFarmData(farmNftId: bigint): Promise<FarmDataResult> {
       error: null,
       isSuccess: true
     }
-  } catch (error: any) {
+  } catch (error) {
     return {
       data: null,
-      error: `Error parsing farm data: ${error?.message || 'Unknown parsing error'}`,
+      error: `Error parsing farm data: ${error instanceof Error ? error.message : 'Unknown error'}`,
       isSuccess: false
     }
   }

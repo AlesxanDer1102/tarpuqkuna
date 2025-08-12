@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PublicClient } from 'viem'
-import type { Abi, Address, ContractFunctionName, ContractFunctionArgs } from 'viem'
+import type { Abi, Address, ContractFunctionName, ContractFunctionArgs, ContractEventName } from 'viem'
 
 export interface SafeContractResult<T> {
   data: T | null
@@ -93,7 +94,7 @@ export async function safeReadContract<
  */
 export async function safeGetContractEvents<
   TAbi extends Abi | readonly unknown[],
-  TEventName extends string
+  TEventName extends ContractEventName<TAbi>
 >(
   client: PublicClient,
   config: {

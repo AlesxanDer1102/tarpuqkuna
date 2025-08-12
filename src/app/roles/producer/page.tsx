@@ -3,7 +3,7 @@ import { agroTraceAbi } from "@/constants"
 import { agroTraceContract } from "@/utils/constants"
 import { useState } from "react"
 import { Address } from "viem"
-import { useAccount, useChainId, useWriteContract } from "wagmi"
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 
 interface FarmData {
   farmNftId: bigint,
@@ -46,7 +46,7 @@ interface FormData {
 
 export default function ProducerPage() {
   const { address } = useAccount()
-  const chainId = useChainId()
+
 
   const [id, setId] = useState<bigint>()
   const [farmData, setFarmData] = useState<FarmData>()
@@ -70,11 +70,19 @@ export default function ProducerPage() {
   })
 
   const {
-    data: approvalHash,
-    isPending: isApprovalPending,
+    data: mintHash,
+    isPending: isMintPending,
     writeContract: mintLot,
-    error: approvalError,
+    error: mintError,
   } = useWriteContract()
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isMintSuccess,
+    error: confirmError,
+  } = useWaitForTransactionReceipt({
+    hash: mintHash,
+  })
 
   const generateTokenURI = (metadata: LotMetadata): string => {
     const jsonString = JSON.stringify(metadata)
@@ -136,6 +144,17 @@ export default function ProducerPage() {
     }
   }
 
+  const getMintButtonText = () => {
+    if (isMintPending) return 'Iniciando transacción...'
+    if (isConfirming) return 'Confirmando...'
+    if (isMintSuccess) return 'Lote Creado ✓'
+    return 'Mintear Lote'
+  }
+
+  const getMintButtonDisabled = () => {
+    return isMintPending || isConfirming || isMintSuccess
+  }
+
   return (
     <div>
       <div className="text-center mb-8">
@@ -166,12 +185,41 @@ export default function ProducerPage() {
               <p className="text-sm text-green-700 dark:text-green-400">ID: {id.toString()}</p>
               <p className="text-sm text-green-700 dark:text-green-400">Producto: {farmData.product}</p>
               <p className="text-sm text-green-700 dark:text-green-400">Cantidad: {amount.toString()}</p>
+              
+              {mintHash && (
+                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded text-xs">
+                  <p className="text-blue-600 dark:text-blue-400">
+                    Hash: 
+                    <a 
+                      href={`https://sepolia.etherscan.io/tx/${mintHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 underline hover:text-blue-800 dark:hover:text-blue-300 break-all"
+                    >
+                      {mintHash}
+                    </a>
+                  </p>
+                </div>
+              )}
+              
+              {isMintSuccess && (
+                <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/30 rounded text-sm">
+                  <p className="text-green-600 dark:text-green-400">✅ Lote creado exitosamente</p>
+                </div>
+              )}
+              
+              {(mintError || confirmError) && (
+                <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/30 rounded text-sm">
+                  <p className="text-red-600 dark:text-red-400">❌ Error: {mintError?.message || confirmError?.message}</p>
+                </div>
+              )}
+              
               <button
                 onClick={handleMintLot}
-                disabled={isApprovalPending}
+                disabled={getMintButtonDisabled()}
                 className="w-full mt-3 bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
-                {isApprovalPending ? 'Mineando...' : 'Mintear Lote'}
+                {getMintButtonText()}
               </button>
             </div>
           )}

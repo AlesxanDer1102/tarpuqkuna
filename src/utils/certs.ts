@@ -2,6 +2,7 @@ import { CertificateData } from "@/types"
 import { publicClient } from "./client"
 import { certificatesContract } from "./constants"
 import { safeReadContract } from "./safeContract"
+import { Address } from "viem"
 
 export interface CertificatesResult {
   data: CertificateData[]
@@ -29,7 +30,7 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
   }
 
   const certKeys = keysResult.data as string[]
-  
+
   // Validate keys array
   if (!Array.isArray(certKeys)) {
     return {
@@ -41,8 +42,8 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
   }
 
   // Filter out null/empty keys
-  const validKeys = certKeys.filter(key => 
-    key && 
+  const validKeys = certKeys.filter(key =>
+    key &&
     key !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
     typeof key === 'string' &&
     key.length > 0
@@ -64,7 +65,7 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
         abi: certificatesContract.abi,
         address: certificatesContract.address,
         functionName: 'getByKey',
-        args: [key as `0x${string}`],
+        args: [key as Address],
       })
 
       if (!certResult.isSuccess || !certResult.data) {
@@ -72,7 +73,7 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
         return null
       }
 
-      const cert = certResult.data as any
+      const cert = certResult.data
 
       // Validate certificate structure
       if (!cert || typeof cert !== 'object') {
@@ -90,7 +91,7 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
         sig: cert.sig || '',
       } as CertificateData
 
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error fetching individual certificate with key ${key}:`, error)
       return null
     }
@@ -109,10 +110,10 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificatesRes
       isSuccess: true,
       isEmpty: validCertificates.length === 0
     }
-  } catch (error: any) {
+  } catch (error) {
     return {
       data: [],
-      error: `Error processing certificates: ${error?.message || 'Unknown error'}`,
+      error: `Error processing certificates: ${error instanceof Error ? error.message : 'Unknown error'}`,
       isSuccess: false,
       isEmpty: true
     }
