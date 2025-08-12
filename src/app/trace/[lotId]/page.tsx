@@ -27,7 +27,12 @@ export async function generateMetadata({ params }: TracePageProps): Promise<Meta
   }
 }
 
+export interface LotLogs {
+  args: LotHeader
+}
+
 export interface LotHeader {
+  args: LotHeader
   amount: bigint       // 1000n
   harvestId: Hex       // "0x86bf..."
   id: bigint           // 101n
@@ -52,7 +57,10 @@ export default async function TracePage({ params }: TracePageProps) {
   const { lotId } = await params
 
 
-  const LotMintedLogs = await publicClient.getContractEvents({
+  const LotMintedLogs = await publicClient.getContractEvents<
+    typeof agroTraceContract.abi,
+    'LotMinted'
+  >({
     abi: agroTraceContract.abi,
     address: agroTraceContract.address,
     eventName: "LotMinted",
@@ -66,7 +74,7 @@ export default async function TracePage({ params }: TracePageProps) {
 
 
 
-  const LotData: LotHeader = LotMintedLogs.find(log => log.args.id === BigInt(lotId))
+  const LotData = LotMintedLogs.find(log => log.args.id === BigInt(lotId))
 
   if (!LotData) {
     return (
@@ -124,7 +132,7 @@ export default async function TracePage({ params }: TracePageProps) {
   const ArgsLot: LotHeader = LotData.args as LotHeader
 
 
-  const HarvestLogs = await publicClient.getContractEvents({
+  const HarvestLogs = await publicClient.getContractEvents<typeof agroTraceContract.abi, 'HarvestCreated'>({
     abi: agroTraceContract.abi,
     address: agroTraceContract.address,
     eventName: "HarvestCreated",
@@ -135,7 +143,7 @@ export default async function TracePage({ params }: TracePageProps) {
     toBlock: BigInt(8959110),
   })
 
-  const CertLogs = await publicClient.getContractEvents({
+  const CertLogs = await publicClient.getContractEvents<typeof certificatesContract.abi, 'CertificateLinked'>({
     abi: certificatesContract.abi,
     address: certificatesContract.address,
     eventName: "CertificateLinked",
@@ -365,9 +373,9 @@ export default async function TracePage({ params }: TracePageProps) {
                 owner: ArgsLot.owner
               }}
               certificates={CertLogs.map(cert => ({
-                certType: cert.args.certType,
-                certKey: cert.args.certKey,
-                issuer: cert.args.issuer,
+                certType: cert.args.certType || '',
+                certKey: cert.args.certKey || '',
+                issuer: cert.args.issuer || '',
                 transactionHash: cert.transactionHash,
                 blockNumber: cert.blockNumber
               }))}

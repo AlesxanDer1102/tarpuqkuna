@@ -2,18 +2,18 @@ import { AGROTRACE_ADDRESS, agroTraceAbi, CERTIFICATES_ADDRESS, certificatesAbi,
 
 // AgroTrace contract functions
 export const agroTraceContract = {
-    address: AGROTRACE_ADDRESS as `0x${string}`,
-    abi: agroTraceAbi,
+  address: AGROTRACE_ADDRESS as `0x${string}`,
+  abi: agroTraceAbi,
 } as const
 
 export const certificatesContract = {
-    address: CERTIFICATES_ADDRESS as `0x${string}`,
-    abi: certificatesAbi,
+  address: CERTIFICATES_ADDRESS as `0x${string}`,
+  abi: certificatesAbi,
 } as const
 
 export const farmNFTContract = {
-    address: FARM_NFT_ADDRESS as `0x${string}`,
-    abi: farmNFTAbi,
+  address: FARM_NFT_ADDRESS as `0x${string}`,
+  abi: farmNFTAbi,
 } as const
 
 
@@ -47,12 +47,5 @@ export const STAGES = {
   ProcesoEmpaque: 1,  // Proceso y Empaque
   Transporte: 2,      // Transporte
   Llegada: 3          // Llegada
-} as const
-
-// Event logs storage
-export const eventLogs = {
-  delivered: [] as any[],
-  stageAnchored: [] as any[],
-  stateChanged: [] as any[]
 } as const
 

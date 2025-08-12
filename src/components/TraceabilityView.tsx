@@ -3,6 +3,7 @@
 import { FarmData } from '@/types'
 import { formatGeohash } from '@/utils/helpers'
 import { farmNFTContract, certificatesContract, CERTIFICATE_TYPES } from '@/utils/constants'
+import Image from 'next/image'
 
 interface TraceabilityViewProps {
   lotId: string
@@ -61,10 +62,13 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
       {/* Hero Section with Farm Image */}
       <div className="bg-white rounded-2xl shadow-lg border-2 border-green-200 overflow-hidden">
         <div className="relative h-64 md:h-80">
-          <img
+          <Image
             src={farmData.photoURI}
             alt={farmData.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">

@@ -1,3 +1,4 @@
+import { Abi } from "viem"
 
 interface ContractsConfig {
     [chainId: number]: {
@@ -27,373 +28,373 @@ export const CERTIFICATES_ADDRESS = "0x36bfdb2999a3c2adb5405c7fdd8430fe1b7b83d8"
 export const AGROTRACE_ADDRESS = "0xfce8d6510898854508c8f8d494e5595ed0a40184"
 
 export const actorsRegistryAbi = [
-  {
-    "inputs": [
-      { "internalType": "address", "name": "admin", "type": "address" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  { "inputs": [], "name": "AccessControlBadConfirmation", "type": "error" },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "account", "type": "address" },
-      { "internalType": "bytes32", "name": "neededRole", "type": "bytes32" }
-    ],
-    "name": "AccessControlUnauthorizedAccount",
-    "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      }
-    ],
-    "name": "ActorActivation",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "orgName",
-        "type": "string"
-      }
-    ],
-    "name": "ActorAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      }
-    ],
-    "name": "ActorUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "previousAdminRole",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "newAdminRole",
-        "type": "bytes32"
-      }
-    ],
-    "name": "RoleAdminChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleGranted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
-    ],
-    "name": "RoleGrantedExt",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleRevoked",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "who",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
-    ],
-    "name": "RoleRevokedExt",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "REGISTRY_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ROLE_INSPECTOR",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ROLE_PROCESSOR",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ROLE_PRODUCER",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ROLE_RETAILER",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ROLE_TRANSPORTER",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "who", "type": "address" },
-      { "internalType": "string", "name": "orgName", "type": "string" },
-      { "internalType": "string", "name": "did", "type": "string" },
-      { "internalType": "string", "name": "metaURI", "type": "string" },
-      { "internalType": "bool", "name": "active", "type": "bool" }
-    ],
-    "name": "addActor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "who", "type": "address" }],
-    "name": "getActor",
-    "outputs": [
-      { "internalType": "string", "name": "", "type": "string" },
-      { "internalType": "string", "name": "", "type": "string" },
-      { "internalType": "string", "name": "", "type": "string" },
-      { "internalType": "bool", "name": "", "type": "bool" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" }
-    ],
-    "name": "getRoleAdmin",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "who", "type": "address" },
-      { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
-    ],
-    "name": "grantRoleFor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "hasRole",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "who", "type": "address" },
-      { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
-    ],
-    "name": "hasRole",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "who", "type": "address" }],
-    "name": "isActive",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      {
-        "internalType": "address",
-        "name": "callerConfirmation",
-        "type": "address"
-      }
-    ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "who", "type": "address" },
-      { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
-    ],
-    "name": "revokeRoleFor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
-    ],
-    "name": "supportsInterface",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "who", "type": "address" },
-      { "internalType": "string", "name": "orgName", "type": "string" },
-      { "internalType": "string", "name": "did", "type": "string" },
-      { "internalType": "string", "name": "metaURI", "type": "string" },
-      { "internalType": "bool", "name": "active", "type": "bool" }
-    ],
-    "name": "updateActor",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-]
+    {
+        "inputs": [
+            { "internalType": "address", "name": "admin", "type": "address" }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    { "inputs": [], "name": "AccessControlBadConfirmation", "type": "error" },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "account", "type": "address" },
+            { "internalType": "bytes32", "name": "neededRole", "type": "bytes32" }
+        ],
+        "name": "AccessControlUnauthorizedAccount",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "who",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "active",
+                "type": "bool"
+            }
+        ],
+        "name": "ActorActivation",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "who",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "orgName",
+                "type": "string"
+            }
+        ],
+        "name": "ActorAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "who",
+                "type": "address"
+            }
+        ],
+        "name": "ActorUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "previousAdminRole",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "newAdminRole",
+                "type": "bytes32"
+            }
+        ],
+        "name": "RoleAdminChanged",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            }
+        ],
+        "name": "RoleGranted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "who",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            }
+        ],
+        "name": "RoleGrantedExt",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            }
+        ],
+        "name": "RoleRevoked",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "who",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "role",
+                "type": "bytes32"
+            }
+        ],
+        "name": "RoleRevokedExt",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "DEFAULT_ADMIN_ROLE",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "REGISTRY_ADMIN_ROLE",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ROLE_INSPECTOR",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ROLE_PROCESSOR",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ROLE_PRODUCER",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ROLE_RETAILER",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ROLE_TRANSPORTER",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "who", "type": "address" },
+            { "internalType": "string", "name": "orgName", "type": "string" },
+            { "internalType": "string", "name": "did", "type": "string" },
+            { "internalType": "string", "name": "metaURI", "type": "string" },
+            { "internalType": "bool", "name": "active", "type": "bool" }
+        ],
+        "name": "addActor",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "who", "type": "address" }],
+        "name": "getActor",
+        "outputs": [
+            { "internalType": "string", "name": "", "type": "string" },
+            { "internalType": "string", "name": "", "type": "string" },
+            { "internalType": "string", "name": "", "type": "string" },
+            { "internalType": "bool", "name": "", "type": "bool" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "role", "type": "bytes32" }
+        ],
+        "name": "getRoleAdmin",
+        "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+            { "internalType": "address", "name": "account", "type": "address" }
+        ],
+        "name": "grantRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "who", "type": "address" },
+            { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
+        ],
+        "name": "grantRoleFor",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+            { "internalType": "address", "name": "account", "type": "address" }
+        ],
+        "name": "hasRole",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "who", "type": "address" },
+            { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
+        ],
+        "name": "hasRole",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "internalType": "address", "name": "who", "type": "address" }],
+        "name": "isActive",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+            {
+                "internalType": "address",
+                "name": "callerConfirmation",
+                "type": "address"
+            }
+        ],
+        "name": "renounceRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+            { "internalType": "address", "name": "account", "type": "address" }
+        ],
+        "name": "revokeRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "who", "type": "address" },
+            { "internalType": "bytes32", "name": "role_", "type": "bytes32" }
+        ],
+        "name": "revokeRoleFor",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
+        ],
+        "name": "supportsInterface",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "internalType": "address", "name": "who", "type": "address" },
+            { "internalType": "string", "name": "orgName", "type": "string" },
+            { "internalType": "string", "name": "did", "type": "string" },
+            { "internalType": "string", "name": "metaURI", "type": "string" },
+            { "internalType": "bool", "name": "active", "type": "bool" }
+        ],
+        "name": "updateActor",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+] as const satisfies Abi
 
 
 export const agroTraceAbi = [
@@ -1409,7 +1410,7 @@ export const agroTraceAbi = [
         "stateMutability": "view",
         "type": "function"
     }
-]
+] as const satisfies Abi
 
 export const certificatesAbi = [
     {
@@ -1575,7 +1576,7 @@ export const certificatesAbi = [
         "stateMutability": "nonpayable",
         "type": "function"
     }
-]
+] as const satisfies Abi
 
 
 export const farmNFTAbi = [

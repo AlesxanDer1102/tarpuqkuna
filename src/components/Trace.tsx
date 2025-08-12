@@ -213,26 +213,26 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                             <div className="bg-white p-4 rounded-xl border border-amber-200">
                                 <div className="text-amber-600 font-medium text-sm">📊 Cantidad</div>
                                 <div className="font-bold text-amber-800 text-lg">
-                                    {LotMinted[0].args.amount.toString()} kg
+                                    {LotMinted[0].args.amount?.toString()} kg
                                 </div>
                             </div>
                             <div className="bg-white p-4 rounded-xl border border-amber-200">
                                 <div className="text-amber-600 font-medium text-sm">👨‍🌾 Propietario</div>
                                 <div className="font-mono text-sm text-amber-800">
-                                    {truncateHash(LotMinted[0].args.owner)}
+                                    {truncateHash(LotMinted[0].args.owner as string)}
                                 </div>
                             </div>
                             <div className="bg-white p-4 rounded-xl border border-amber-200">
                                 <div className="text-amber-600 font-medium text-sm">🆔 ID de Cosecha</div>
                                 <div className="font-mono text-xs text-amber-800">
-                                    {truncateHash(LotMinted[0].args.harvestId)}
+                                    {truncateHash(LotMinted[0].args.harvestId as string)}
                                 </div>
                             </div>
                         </div>
                         <div className="mt-4 p-3 bg-white rounded-lg border border-amber-200 text-xs text-gray-500 space-y-1">
                             <div>
-                                🔗 Transacción: 
-                                <a 
+                                🔗 Transacción:
+                                <a
                                     href={`https://sepolia.etherscan.io/tx/${LotMinted[0].transactionHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -262,15 +262,15 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                             <div className="bg-white p-4 rounded-xl border border-yellow-200">
                                 <div className="text-yellow-600 font-medium text-sm">📅 Fecha de Inicio</div>
                                 <div className="font-semibold text-yellow-800">
-                                    {formatTimestamp(HarvestCreated[0].args.startDate)}
+                                    {formatTimestamp(HarvestCreated[0].args.startDate as bigint)}
                                 </div>
                             </div>
                             <div className="bg-white p-4 rounded-xl border border-yellow-200">
                                 <div className="text-yellow-600 font-medium text-sm">🏪 ID de Finca</div>
                                 <div className="font-bold text-yellow-800 text-lg mb-2">
-                                    #{HarvestCreated[0].args.farmNftId.toString()}
+                                    #{HarvestCreated[0].args.farmNftId?.toString()}
                                 </div>
-                                <a 
+                                <a
                                     href={`https://sepolia.etherscan.io/token/${farmNFTContract.address}?a=${HarvestCreated[0].args.farmNftId}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -282,8 +282,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                         </div>
                         <div className="mt-4 p-3 bg-white rounded-lg border border-yellow-200 text-xs text-gray-500 space-y-1">
                             <div>
-                                🔗 Transacción: 
-                                <a 
+                                🔗 Transacción:
+                                <a
                                     href={`https://sepolia.etherscan.io/tx/${HarvestCreated[0].transactionHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -305,7 +305,7 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                         </h2>
                         <div className="grid md:grid-cols-2 gap-4">
                             {CertificateLinked.map((cert, index) => {
-                                const certInfo = getCertificateType(cert.args.certType)
+                                const certInfo = getCertificateType(cert.args.certType as string)
                                 return (
                                     <div key={index} className={`bg-white p-4 rounded-xl border-2 border-${certInfo.color}-200`}>
                                         <div className="flex items-center gap-3 mb-3">
@@ -319,26 +319,26 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="space-y-2 text-sm">
                                             <div className={`text-${certInfo.color}-700`}>
                                                 <span className="font-medium">Emisor:</span>
                                                 <div className="font-mono text-xs mt-1">
-                                                    {truncateHash(cert.args.issuer)}
+                                                    {truncateHash(cert.args.issuer as string)}
                                                 </div>
                                             </div>
                                             <div className={`text-${certInfo.color}-700`}>
                                                 <span className="font-medium">Clave del Certificado:</span>
                                                 <div className="font-mono text-xs mt-1">
-                                                    {truncateHash(cert.args.certKey)}
+                                                    {truncateHash(cert.args.certKey as string)}
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500 space-y-1">
                                             <div>
-                                                🔗 Transacción: 
-                                                <a 
+                                                🔗 Transacción:
+                                                <a
                                                     href={`https://sepolia.etherscan.io/tx/${cert.transactionHash}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -348,8 +348,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                                 </a>
                                                 <span className="text-gray-400 ml-1">↗</span>
                                             </div>
-                                            <div>📦 Bloque: 
-                                                <a 
+                                            <div>📦 Bloque:
+                                                <a
                                                     href={`https://sepolia.etherscan.io/block/${cert.blockNumber}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -360,8 +360,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                                 <span className="text-gray-400 ml-1">↗</span>
                                             </div>
                                             <div>
-                                                📜 Contrato de Certificados: 
-                                                <a 
+                                                📜 Contrato de Certificados:
+                                                <a
                                                     href={`https://sepolia.etherscan.io/address/${certificatesContract.address}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
@@ -385,9 +385,9 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                             🏷️ Estado Actual
                         </h2>
                         <div className="text-lg text-green-700">
-                            <span className="font-medium">{getStateLabel(StateChanged[StateChanged.length - 1].args.newState)}</span>
+                            <span className="font-medium">{getStateLabel(StateChanged[StateChanged.length - 1].args.newState as number)}</span>
                             <span className="text-sm text-gray-600 ml-2">
-                                ({formatTimestamp(StateChanged[StateChanged.length - 1].args.time)})
+                                ({formatTimestamp(StateChanged[StateChanged.length - 1].args.time as bigint)})
                             </span>
                         </div>
                     </div>
@@ -408,10 +408,10 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                             {event.args.stage === 1 && "📦"}
                                             {event.args.stage === 2 && "🚛"}
                                             {event.args.stage === 3 && "🏪"}
-                                            {getStageLabel(event.args.stage)}
+                                            {getStageLabel(event.args.stage as number)}
                                         </h3>
                                         <span className="text-sm text-green-600 bg-white px-3 py-1 rounded-lg">
-                                            {formatTimestamp(event.args.time)}
+                                            {formatTimestamp(event.args.time as bigint)}
                                         </span>
                                     </div>
 
@@ -419,44 +419,44 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">🌡️ Temp. Promedio</div>
                                             <div className="font-bold text-blue-600 text-lg">
-                                                {formatTemperature(event.args.avgTemp_cDeci)}
+                                                {formatTemperature(event.args.avgTemp_cDeci as number)}
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">🌡️ Temp. Última</div>
                                             <div className="font-bold text-blue-600 text-lg">
-                                                {formatTemperature(event.args.lastTemp_cDeci)}
+                                                {formatTemperature(event.args.lastTemp_cDeci as number)}
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">💧 Humedad Prom.</div>
                                             <div className="font-bold text-blue-500 text-lg">
-                                                {formatHumidity(event.args.avgHumRel_pDeci)}
+                                                {formatHumidity(event.args.avgHumRel_pDeci as number)}
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">💧 Humedad Última</div>
                                             <div className="font-bold text-blue-500 text-lg">
-                                                {formatHumidity(event.args.lastHumRel_pDeci)}
+                                                {formatHumidity(event.args.lastHumRel_pDeci as number)}
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">🌱 H. Suelo Prom.</div>
                                             <div className="font-bold text-green-600 text-lg">
-                                                {formatSoilMoisture(event.args.avgSoilMoist_pDeci)}
+                                                {formatSoilMoisture(event.args.avgSoilMoist_pDeci as number)}
                                             </div>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl border border-green-200">
                                             <div className="text-green-600 font-medium">🌱 H. Suelo Última</div>
                                             <div className="font-bold text-green-600 text-lg">
-                                                {formatSoilMoisture(event.args.lastSoilMoist_pDeci)}
+                                                {formatSoilMoisture(event.args.lastSoilMoist_pDeci as number)}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="mt-4 p-3 bg-white rounded-lg border border-green-200 text-xs text-gray-500 space-y-2">
-                                        <div>🔒 Hash de Contenido: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.contentHash)}</code></div>
-                                        <div>📡 Raíz de Sensores: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.sensorRoot)}</code></div>
+                                        <div>🔒 Hash de Contenido: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.contentHash as string)}</code></div>
+                                        <div>📡 Raíz de Sensores: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.sensorRoot as string)}</code></div>
                                         <div className="pt-2 border-t border-green-200">
                                             🔗 Transacción:
                                             <a
@@ -499,7 +499,7 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                     <div className="bg-white p-4 rounded-xl border border-green-200">
                                         <div className="text-sm text-green-600 font-medium mb-1">📅 Fecha de Entrega</div>
                                         <div className="font-bold text-green-700 text-lg">
-                                            {formatTimestamp(event.args.deliveredAt)}
+                                            {formatTimestamp(event.args.deliveredAt as bigint)}
                                         </div>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-green-200">
@@ -510,7 +510,7 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                     </div>
                                 </div>
                                 <div className="mt-4 p-3 bg-white rounded-lg border border-green-200 text-xs text-gray-500 space-y-2">
-                                    <div>🧾 Hash de Recibo: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.receiptHash)}</code></div>
+                                    <div>🧾 Hash de Recibo: <code className="bg-gray-100 px-1 rounded">{truncateHash(event.args.receiptHash as string)}</code></div>
                                     <div className="pt-2 border-t border-green-200">
                                         🔗 Transacción:
                                         <a
@@ -558,10 +558,10 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                             {event.args.newState === 3 && "🏛️"}
                                             {event.args.newState === 4 && "📦"}
                                             {event.args.newState === 6 && "🔒"}
-                                            {getStateLabel(event.args.newState)}
+                                            {getStateLabel(event.args.newState as number)}
                                         </div>
                                         <div className="text-sm text-green-600 bg-white px-3 py-1 rounded-lg">
-                                            {formatTimestamp(event.args.time)}
+                                            {formatTimestamp(event.args.time as bigint)}
                                         </div>
                                     </div>
                                     <div className="text-xs text-gray-500 bg-white p-2 rounded border border-green-200 space-y-1">

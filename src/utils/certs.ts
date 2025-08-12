@@ -18,19 +18,20 @@ export async function getLotCertificates(lotId: bigint): Promise<CertificateData
       certKeys.filter(key => key && key !== '0x0000000000000000000000000000000000000000000000000000000000000000').map(async (key) => {
         try {
           const cert = await publicClient.readContract({
-            ...certificatesContract,
+            abi: certificatesContract.abi,
+            address: certificatesContract.address,
             functionName: 'getByKey',
             args: [key as `0x${string}`],
-          }) as [string, string, string, bigint, bigint, boolean, string]
+          })
 
           return {
-            certType: cert[0] || '',
-            docHash: cert[1] || '',
-            issuer: cert[2] || '',
-            issuedAt: cert[3] || BigInt(0),
-            expiresAt: cert[4] || BigInt(0),
-            revoked: cert[5] || false,
-            sig: cert[6] || '',
+            certType: cert.certType || '',
+            docHash: cert.docHash || '',
+            issuer: cert.issuer || '',
+            issuedAt: cert.issuedAt || BigInt(0),
+            expiresAt: cert.expiresAt || BigInt(0),
+            revoked: cert.revoked || false,
+            sig: cert.sig || '',
           }
         } catch (certError) {
           console.error('Error fetching individual certificate:', certError)
