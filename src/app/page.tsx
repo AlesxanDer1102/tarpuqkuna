@@ -32,6 +32,28 @@ export default function Home() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         <LotSearchForm />
+        
+        {/* Roles Access Section */}
+        <div className="mt-12 bg-white rounded-2xl shadow-lg border-2 border-green-200 p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-green-800 mb-4">
+              👥 Acceso por Roles
+            </h2>
+            <p className="text-green-600">
+              Accede al panel específico según tu rol en la cadena de suministro
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <a
+              href="/roles"
+              className="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition-colors text-lg flex items-center gap-2"
+            >
+              <span>🚀</span>
+              Acceder al Panel de Roles
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Features Section */}
