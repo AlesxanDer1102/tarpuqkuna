@@ -1,5 +1,5 @@
 import { publicClient } from "@/utils/client"
-import { agroTraceContract } from "@/utils/constants"
+import { agroTraceContract, STAGES, LOT_STATES } from "@/utils/constants"
 import { parseAbiItem } from "viem"
 
 
@@ -7,10 +7,11 @@ interface TraceabilityViewProps {
     lotId: string
 }
 
-export default function Trace({ lotId }: TraceabilityViewProps) {
+export default async function Trace({ lotId }: TraceabilityViewProps) {
 
     const Delivered = await publicClient.getLogs({
-        fromBlock: BigInt(8958496),
+        fromBlock: BigInt(8959010),
+        toBlock: BigInt(8959110),
         address: agroTraceContract.address,
         event: parseAbiItem("event Delivered(uint256 indexed lotId, bytes12 destinationGeohash, uint64 deliveredAt, bytes32 receiptHash)"),
         args: {
@@ -20,7 +21,8 @@ export default function Trace({ lotId }: TraceabilityViewProps) {
     })
 
     const StageAnchored = await publicClient.getLogs({
-        fromBlock: BigInt(8958496),
+        fromBlock: BigInt(8959010),
+        toBlock: BigInt(8959110),
         address: agroTraceContract.address,
         event: {
             name: "StageAnchored",
@@ -90,7 +92,8 @@ export default function Trace({ lotId }: TraceabilityViewProps) {
     })
 
     const StateChanged = await publicClient.getLogs({
-        fromBlock: BigInt(8958496),
+        fromBlock: BigInt(8959010),
+        toBlock: BigInt(8959110),
         address: agroTraceContract.address,
         event: {
             "inputs": [
