@@ -6,6 +6,13 @@ import { agroTraceContract, certificatesContract, farmNFTContract } from '@/util
 import { Address, Hex } from 'viem'
 import Trace from '@/components/Trace'
 import { getFarmData } from '@/utils/farmData'
+import { 
+  safeGetContractEvents, 
+  safeReadContract, 
+  safeArrayAccess, 
+  safeFindInArray, 
+  safeDecodeBase64Json 
+} from '@/utils/safeContract'
 
 interface TracePageProps {
   params: Promise<{
@@ -78,80 +85,129 @@ export interface CertificateHeader {
 export default async function TracePage({ params }: TracePageProps) {
   const { lotId } = await params
 
+  let block: bigint
+  let toBlock: bigint
+  if (Number(lotId) == 101) {
+    block = BigInt(8959010)
+    toBlock = BigInt(8959310)
+  } else {
+    block = BigInt(8969478)
+    toBlock = BigInt(8969878)
+  }
 
-  const LotMintedLogs = await publicClient.getContractEvents<
-    typeof agroTraceContract.abi,
-    'LotMinted'
-  >({
+  // Safely get LotMinted events
+  const lotMintedResult = await safeGetContractEvents(publicClient, {
     abi: agroTraceContract.abi,
     address: agroTraceContract.address,
     eventName: "LotMinted",
-    fromBlock: BigInt(8959010),
-    toBlock: BigInt(8959110),
+    fromBlock: block,
+    toBlock: toBlock,
     strict: true
   })
 
-  const LotMeta = await publicClient.readContract({
+  if (!lotMintedResult.isSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-red-50 to-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <header className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
+              <span className="text-xl">🌱</span>
+              <span className="font-bold text-lg">TARPUQKUNA</span>
+            </Link>
+          </header>
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center shadow-lg">
+            <div className="text-6xl mb-4">🚫</div>
+            <h1 className="text-2xl font-bold text-red-800 mb-4">Error al Consultar Eventos</h1>
+            <p className="text-red-600 mb-6">{lotMintedResult.error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md"
+            >
+              🔄 Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Safely get lot metadata from contract
+  const lotMetaResult = await safeReadContract(publicClient, {
     abi: agroTraceContract.abi,
     address: agroTraceContract.address,
     functionName: "lot",
     args: [BigInt(lotId)]
-  }) as LotMetaArray
-  
-  console.log("LotMeta:", LotMeta)
+  })
 
-  // Decode metadata from base64 encoded JSON (UTF-8 safe)
-  let lotMetadata: LotMetadata | null = null
-  try {
-    if (LotMeta[6] && LotMeta[6].startsWith('data:application/json;base64,')) {
-      const base64Data = LotMeta[6].replace('data:application/json;base64,', '')
-      
-      // Method 1: Using Buffer (Node.js compatible, handles UTF-8)
-      const decodedJson = Buffer.from(base64Data, 'base64').toString('utf-8')
-      
-      // Alternative Method 2: Using TextDecoder (modern Web API, UTF-8 safe)
-      // const binaryString = atob(base64Data)
-      // const bytes = new Uint8Array(binaryString.length)
-      // for (let i = 0; i < binaryString.length; i++) {
-      //   bytes[i] = binaryString.charCodeAt(i)
-      // }
-      // const decodedJson = new TextDecoder('utf-8').decode(bytes)
-      
-      lotMetadata = JSON.parse(decodedJson) as LotMetadata
-      console.log("Decoded Lot Metadata:", lotMetadata)
-    }
-  } catch (error) {
-    console.error("Error decoding lot metadata:", error)
+  if (!lotMetaResult.isSuccess || !lotMetaResult.data) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <header className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
+              <span className="text-xl">🌱</span>
+              <span className="font-bold text-lg">TARPUQKUNA</span>
+            </Link>
+          </header>
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-8 text-center shadow-lg">
+            <div className="text-6xl mb-4">📦❓</div>
+            <h1 className="text-2xl font-bold text-yellow-800 mb-4">Error al Consultar Metadata</h1>
+            <p className="text-yellow-600 mb-6">{lotMetaResult.error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 transition-colors shadow-md"
+            >
+              🔄 Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  console.log("LotMinted Logs:", LotMintedLogs[0].args as LotHeader)
+  const LotMeta = lotMetaResult.data as LotMetaArray
+  console.log("LotMeta:", LotMeta)
 
+  // Safely decode metadata from base64 encoded JSON
+  const metadataResult = safeDecodeBase64Json<LotMetadata>(LotMeta[6], 'lot metadata')
+  const lotMetadata = metadataResult.data
+  
+  if (metadataResult.error) {
+    console.warn("Could not decode lot metadata:", metadataResult.error)
+  } else if (lotMetadata) {
+    console.log("Decoded Lot Metadata:", lotMetadata)
+  }
 
+  // Safely find the lot data
+  const lotDataResult = safeFindInArray(
+    lotMintedResult.data, 
+    log => log.args.id === BigInt(lotId),
+    'LotMinted events'
+  )
 
-  const LotData = LotMintedLogs.find(log => log.args.id === BigInt(lotId))
+  const LotData = lotDataResult.item
 
   if (!LotData) {
+    const errorDetails = lotDataResult.error || 'Lote no encontrado en los eventos de la blockchain'
+    
     return (
       <div className="min-h-screen bg-gradient-to-b from-red-50 to-white p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header Navigation */}
           <header className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors"
-            >
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
               <span className="text-xl">🌱</span>
               <span className="font-bold text-lg">TARPUQKUNA</span>
             </Link>
           </header>
 
-          {/* Error Content */}
           <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center shadow-lg">
             <div className="text-6xl mb-4">📦❌</div>
             <h1 className="text-2xl font-bold text-red-800 mb-4">Lote No Encontrado</h1>
-            <p className="text-red-600 mb-6">
+            <p className="text-red-600 mb-4">
               No se encontró ningún lote con el ID #{lotId} en la blockchain.
-              Verifica que el número de lote sea correcto.
+            </p>
+            <p className="text-sm text-red-500 mb-6 font-mono bg-red-100 p-2 rounded">
+              {errorDetails}
             </p>
 
             <div className="bg-red-100 rounded-lg p-4 mb-6 text-left">
@@ -160,20 +216,18 @@ export default async function TracePage({ params }: TracePageProps) {
                 <li>• Verifica que el ID del lote sea correcto</li>
                 <li>• El lote puede no haber sido registrado aún</li>
                 <li>• Contacta al productor para confirmar el ID</li>
+                <li>• Los eventos disponibles: {lotMintedResult.data?.length || 0}</li>
               </ul>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-md"
+              <button
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md"
               >
-                🔍 Buscar Otro Lote
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md"
-              >
+                🔄 Reintentar
+              </button>
+              <Link href="/" className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md">
                 🏠 Volver al Inicio
               </Link>
             </div>
@@ -186,7 +240,8 @@ export default async function TracePage({ params }: TracePageProps) {
   const ArgsLot: LotHeader = LotData.args as LotHeader
 
 
-  const HarvestLogs = await publicClient.getContractEvents<typeof agroTraceContract.abi, 'HarvestCreated'>({
+  // Safely get harvest events
+  const harvestLogsResult = await safeGetContractEvents(publicClient, {
     abi: agroTraceContract.abi,
     address: agroTraceContract.address,
     eventName: "HarvestCreated",
@@ -194,54 +249,86 @@ export default async function TracePage({ params }: TracePageProps) {
       harvestId: ArgsLot.harvestId
     },
     fromBlock: BigInt(8959010),
-    toBlock: BigInt(8959110),
+    toBlock: BigInt(8959410),
   })
 
-  const CertLogs = await publicClient.getContractEvents<typeof certificatesContract.abi, 'CertificateLinked'>({
+  // Safely get certificate events
+  const certLogsResult = await safeGetContractEvents(publicClient, {
     abi: certificatesContract.abi,
     address: certificatesContract.address,
     eventName: "CertificateLinked",
     args: {
       lotId: ArgsLot.id
     },
-    fromBlock: BigInt(8959010),
-    toBlock: BigInt(8959110),
+    fromBlock: block,
+    toBlock: toBlock,
   })
 
-  console.log("HarvestCreated Logs:", HarvestLogs[0].args as HarvestHeader)
-
-  console.log("CertificateLinked Logs:", CertLogs)
-
-  if (!HarvestLogs || HarvestLogs.length === 0) {
+  // Handle harvest logs errors
+  if (!harvestLogsResult.isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header Navigation */}
           <header className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors"
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
+              <span className="text-xl">🌱</span>
+              <span className="font-bold text-lg">TARPUQKUNA</span>
+            </Link>
+          </header>
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-8 text-center shadow-lg">
+            <div className="text-6xl mb-4">🌾❌</div>
+            <h1 className="text-2xl font-bold text-orange-800 mb-4">Error al Consultar Cosechas</h1>
+            <p className="text-orange-600 mb-4">No se pudieron obtener los datos de cosecha para el lote #{lotId}.</p>
+            <p className="text-sm text-orange-500 mb-6 font-mono bg-orange-100 p-2 rounded">
+              {harvestLogsResult.error}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors shadow-md"
             >
+              🔄 Reintentar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Safely access the first harvest log
+  const harvestLogResult = safeArrayAccess(harvestLogsResult.data, 0, 'harvest events')
+  
+  console.log("HarvestCreated Logs Result:", harvestLogResult)
+  console.log("CertificateLinked Logs Result:", certLogsResult)
+
+  if (!harvestLogResult.item) {
+    const errorDetails = harvestLogResult.error || 'No hay eventos de cosecha disponibles'
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <header className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
               <span className="text-xl">🌱</span>
               <span className="font-bold text-lg">TARPUQKUNA</span>
             </Link>
           </header>
 
-          {/* Error Content */}
           <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-8 text-center shadow-lg">
             <div className="text-6xl mb-4">🌾❓</div>
             <h1 className="text-2xl font-bold text-orange-800 mb-4">Cosecha No Encontrada</h1>
-            <p className="text-orange-600 mb-6">
+            <p className="text-orange-600 mb-4">
               No se encontraron registros de cosecha asociados al lote #{lotId}.
-              Los datos de la cosecha pueden no estar disponibles aún.
+            </p>
+            <p className="text-sm text-orange-500 mb-6 font-mono bg-orange-100 p-2 rounded">
+              {errorDetails}
             </p>
 
             <div className="bg-orange-100 rounded-lg p-4 mb-6 text-left">
-              <h3 className="font-semibold text-orange-800 mb-2">Posibles causas:</h3>
+              <h3 className="font-semibold text-orange-800 mb-2">Información disponible:</h3>
               <ul className="text-sm text-orange-700 space-y-1">
-                <li>• La cosecha aún no ha sido registrada en la blockchain</li>
-                <li>• El lote existe pero faltan datos de cosecha</li>
-                <li>• Error temporal en la sincronización de datos</li>
+                <li>• Harvest ID buscado: {ArgsLot.harvestId}</li>
+                <li>• Eventos encontrados: {harvestLogsResult.data?.length || 0}</li>
+                <li>• Estado: {harvestLogsResult.isEmpty ? 'Sin eventos' : 'Eventos no coinciden'}</li>
               </ul>
             </div>
 
@@ -252,10 +339,7 @@ export default async function TracePage({ params }: TracePageProps) {
               >
                 🔄 Reintentar
               </button>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md"
-              >
+              <Link href="/" className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md">
                 🏠 Volver al Inicio
               </Link>
             </div>
@@ -265,35 +349,34 @@ export default async function TracePage({ params }: TracePageProps) {
     )
   }
 
-  const ArgsHarvest: HarvestHeader = HarvestLogs[0].args as HarvestHeader
+  const ArgsHarvest: HarvestHeader = harvestLogResult.item.args as HarvestHeader
 
+  // Safely get farm data
+  const farmDataResult = await getFarmData(ArgsHarvest.farmNftId)
 
-  const FarmData = await getFarmData(ArgsHarvest.farmNftId)
+  console.log("FarmData Result:", farmDataResult)
 
-  console.log("FarmData:", FarmData)
-
-  if (!FarmData) {
+  if (!farmDataResult.isSuccess || !farmDataResult.data) {
+    const errorDetails = farmDataResult.error || 'Error desconocido al obtener datos de finca'
+    
     return (
       <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white p-6">
         <div className="max-w-4xl mx-auto">
-          {/* Header Navigation */}
           <header className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors"
-            >
+            <Link href="/" className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
               <span className="text-xl">🌱</span>
               <span className="font-bold text-lg">TARPUQKUNA</span>
             </Link>
           </header>
 
-          {/* Error Content */}
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-8 text-center shadow-lg">
             <div className="text-6xl mb-4">🏡❓</div>
             <h1 className="text-2xl font-bold text-yellow-800 mb-4">Información de Finca No Disponible</h1>
-            <p className="text-yellow-600 mb-6">
+            <p className="text-yellow-600 mb-4">
               No se encontraron los datos de la finca asociada a la cosecha del lote #{lotId}.
-              La información del NFT de la finca puede no estar disponible temporalmente.
+            </p>
+            <p className="text-sm text-yellow-500 mb-6 font-mono bg-yellow-100 p-2 rounded">
+              {errorDetails}
             </p>
 
             <div className="bg-yellow-100 rounded-lg p-4 mb-6 text-left">
@@ -306,16 +389,6 @@ export default async function TracePage({ params }: TracePageProps) {
               </ul>
             </div>
 
-            <div className="bg-yellow-100 rounded-lg p-4 mb-6 text-left">
-              <h3 className="font-semibold text-yellow-800 mb-2">Posibles causas:</h3>
-              <ul className="text-sm text-yellow-700 space-y-1">
-                <li>• El NFT de la finca no ha sido creado aún</li>
-                <li>• Problemas de conectividad con IPFS</li>
-                <li>• El metadata de la finca está siendo procesado</li>
-                <li>• Error temporal en la carga de datos externos</li>
-              </ul>
-            </div>
-
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => window.location.reload()}
@@ -323,10 +396,7 @@ export default async function TracePage({ params }: TracePageProps) {
               >
                 🔄 Recargar Página
               </button>
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md"
-              >
+              <Link href="/" className="inline-flex items-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md">
                 🏠 Volver al Inicio
               </Link>
               <Link
@@ -343,6 +413,8 @@ export default async function TracePage({ params }: TracePageProps) {
       </div>
     )
   }
+
+  const FarmData = farmDataResult.data
 
 
   // Validate lotId is numeric
@@ -437,7 +509,7 @@ export default async function TracePage({ params }: TracePageProps) {
                 exists: LotMeta[7],
                 metadata: lotMetadata
               }}
-              certificates={CertLogs.map(cert => ({
+              certificates={(certLogsResult.isSuccess ? certLogsResult.data : []).map(cert => ({
                 certType: cert.args.certType || '',
                 certKey: cert.args.certKey || '',
                 issuer: cert.args.issuer || '',
@@ -445,7 +517,7 @@ export default async function TracePage({ params }: TracePageProps) {
                 blockNumber: cert.blockNumber
               }))}
             />
-            <Trace lotId={lotId} />
+            <Trace lotId={lotId} block={block} toBlock={toBlock} />
           </section>
 
           {/* Blockchain Verification */}
