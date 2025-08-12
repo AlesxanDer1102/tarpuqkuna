@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.senasa.gob.pe',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
