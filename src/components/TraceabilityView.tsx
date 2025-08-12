@@ -5,6 +5,16 @@ import { formatGeohash } from '@/utils/helpers'
 import { farmNFTContract, certificatesContract, CERTIFICATE_TYPES } from '@/utils/constants'
 import Image from 'next/image'
 
+interface LotMetadata {
+  name: string
+  description: string
+  image: string
+  attributes: Array<{
+    trait_type: string
+    value: string
+  }>
+}
+
 interface TraceabilityViewProps {
   lotId: string
   farmData: FarmData
@@ -17,6 +27,17 @@ interface TraceabilityViewProps {
     amount: bigint
     owner: string
   }
+  lotMeta: {
+    id: bigint
+    harvestId: string
+    product: string
+    variety: string
+    owner: string
+    amount: number
+    tokenURI: string
+    exists: boolean
+    metadata: LotMetadata | null
+  }
   certificates: Array<{
     certType: string
     certKey: string
@@ -26,7 +47,7 @@ interface TraceabilityViewProps {
   }>
 }
 
-export default function TraceabilityView({ lotId, farmData, harvestData, lotData, certificates }: TraceabilityViewProps) {
+export default function TraceabilityView({ lotId, farmData, harvestData, lotData, lotMeta, certificates }: TraceabilityViewProps) {
   const formatTimestamp = (timestamp: bigint) => {
     return new Date(Number(timestamp) * 1000).toLocaleString('es-ES', {
       year: 'numeric',
@@ -87,7 +108,7 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
             </div>
           </div>
         </div>
-        
+
         <div className="p-8">
           <div className="grid md:grid-cols-3 gap-6">
             {/* Farm Information */}
@@ -102,7 +123,7 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
                 📍 {formatGeohash(farmData.geohash)}
               </p>
               <div className="pt-2 border-t border-green-200">
-                <a 
+                <a
                   href={`https://sepolia.etherscan.io/address/${farmNFTContract.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -119,13 +140,16 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
                 📦 Información del Lote
               </h3>
               <p className="text-amber-700 mb-2">
-                <span className="font-semibold">Cantidad:</span> {lotData.amount.toString()} kg
+                <span className="font-semibold">Cantidad:</span> {lotMeta.amount.toString() || lotData.amount.toString()} kg
+              </p>
+              <p className="text-amber-700 mb-2">
+                <span className="font-semibold">Variedad:</span> {lotMeta.variety}
               </p>
               <p className="text-amber-700 mb-2">
                 <span className="font-semibold">Propietario:</span>
               </p>
               <p className="text-amber-600 text-sm font-mono">
-                {truncateAddress(lotData.owner)}
+                {truncateAddress(lotMeta.owner || lotData.owner)}
               </p>
             </div>
 
@@ -144,7 +168,7 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
                 <span className="font-semibold">Finca ID:</span> #{harvestData.farmNftId.toString()}
               </p>
               <div className="pt-2 border-t border-yellow-200">
-                <a 
+                <a
                   href={`https://sepolia.etherscan.io/token/${farmNFTContract.address}?a=${harvestData.farmNftId}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -155,6 +179,69 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
               </div>
             </div>
           </div>
+
+          {/* Lot NFT Metadata */}
+          {lotMeta.metadata && (
+            <div className="mt-6 bg-blue-50 rounded-xl p-6 border border-blue-200">
+              <h4 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                🎯 Metadata del Lote NFT
+              </h4>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h5 className="font-semibold text-blue-700 mb-2">{lotMeta.metadata.name}</h5>
+                  <p className="text-blue-600 text-sm mb-4">{lotMeta.metadata.description}</p>
+
+                  {lotMeta.metadata.attributes && lotMeta.metadata.attributes.length > 0 && (
+                    <div>
+                      <h6 className="font-semibold text-blue-700 mb-2">Atributos:</h6>
+                      <div className="space-y-2">
+                        {lotMeta.metadata.attributes.map((attr, index) => (
+                          <div key={index} className="bg-white p-2 rounded border border-blue-200">
+                            <span className="text-blue-600 text-sm font-medium">{attr.trait_type}:</span>
+                            <span className="text-blue-800 text-sm ml-2">{attr.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {lotMeta.metadata.image && (
+                  <div>
+                    <h6 className="font-semibold text-blue-700 mb-2">Imagen del Producto:</h6>
+                    <div className="relative h-48 rounded-lg overflow-hidden border border-blue-200 bg-gray-100">
+                      <Image
+                        src={lotMeta.metadata.image}
+                        alt={lotMeta.metadata.name || `Imagen del lote ${lotId}`}
+                        fill
+                        className="object-cover transition-opacity duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={false}
+                        quality={85}
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        onError={(e) => {
+                          const img = e.target as HTMLImageElement
+                          img.style.display = 'none'
+                          const parent = img.parentElement
+                          if (parent) {
+                            parent.innerHTML = `
+                              <div class="flex items-center justify-center h-full bg-gray-200 text-gray-500">
+                                <div class="text-center">
+                                  <div class="text-2xl mb-2">📷</div>
+                                  <div class="text-sm">No se pudo cargar la imagen</div>
+                                </div>
+                              </div>
+                            `
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Farm Details from Metadata */}
           {farmData.metaURI && (
@@ -216,7 +303,7 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
 
                     <div className="pt-2 border-t border-gray-200">
                       <div className="flex flex-col gap-2 text-xs">
-                        <a 
+                        <a
                           href={`https://sepolia.etherscan.io/tx/${cert.transactionHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -224,7 +311,7 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
                         >
                           🔗 Ver Transacción en Etherscan ↗
                         </a>
-                        <a 
+                        <a
                           href={`https://sepolia.etherscan.io/address/${certificatesContract.address}`}
                           target="_blank"
                           rel="noopener noreferrer"

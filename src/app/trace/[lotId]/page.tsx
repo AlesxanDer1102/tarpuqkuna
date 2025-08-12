@@ -3,7 +3,7 @@ import TraceabilityView from '@/components/TraceabilityView'
 import Link from 'next/link'
 import { publicClient } from '@/utils/client'
 import { agroTraceContract, certificatesContract, farmNFTContract } from '@/utils/constants'
-import { Address, Hex, parseAbiItem } from 'viem'
+import { Address, Hex } from 'viem'
 import Trace from '@/components/Trace'
 import { getFarmData } from '@/utils/farmData'
 
