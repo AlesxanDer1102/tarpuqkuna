@@ -4,15 +4,17 @@ import { parseAbiItem } from "viem"
 
 
 interface TraceabilityViewProps {
-    lotId: string
+    lotId: string,
+    block: bigint,
+    toBlock: bigint
 }
 
-export default async function Trace({ lotId }: TraceabilityViewProps) {
+export default async function Trace({ lotId, block, toBlock }: TraceabilityViewProps) {
 
     // Get LotMinted data first
     const LotMinted = await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: agroTraceContract.address,
         event: parseAbiItem("event LotMinted(uint256 indexed id, bytes32 indexed harvestId, uint256 amount, address owner)"),
         args: {
@@ -23,8 +25,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
     // Get HarvestCreated data using harvestId from LotMinted
     const harvestId = LotMinted[0]?.args?.harvestId
     const HarvestCreated = harvestId ? await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: agroTraceContract.address,
         event: parseAbiItem("event HarvestCreated(bytes32 indexed harvestId, uint256 indexed farmNftId, string product, uint64 startDate)"),
         args: {
@@ -34,8 +36,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
 
     // Get CertificateLinked data
     const CertificateLinked = await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: certificatesContract.address,
         event: parseAbiItem("event CertificateLinked(uint256 indexed lotId, bytes32 indexed certKey, bytes32 certType, address issuer)"),
         args: {
@@ -44,8 +46,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
     })
 
     const Delivered = await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: agroTraceContract.address,
         event: parseAbiItem("event Delivered(uint256 indexed lotId, bytes12 destinationGeohash, uint64 deliveredAt, bytes32 receiptHash)"),
         args: {
@@ -55,8 +57,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
     })
 
     const StageAnchored = await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: agroTraceContract.address,
         event: {
             name: "StageAnchored",
@@ -126,8 +128,8 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
     })
 
     const StateChanged = await publicClient.getLogs({
-        fromBlock: BigInt(8959010),
-        toBlock: BigInt(8959110),
+        fromBlock: block,
+        toBlock: toBlock,
         address: agroTraceContract.address,
         event: {
             "inputs": [
