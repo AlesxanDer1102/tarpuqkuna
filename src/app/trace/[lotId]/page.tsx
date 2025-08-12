@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import TraceabilityView from '@/components/TraceabilityView'
 import Link from 'next/link'
 import { publicClient } from '@/utils/client'
-import { agroTraceContract, farmNFTContract } from '@/utils/constants'
+import { agroTraceContract, certificatesContract, farmNFTContract } from '@/utils/constants'
 import { Address, Hex, parseAbiItem } from 'viem'
 import Trace from '@/components/Trace'
 import { getFarmData } from '@/utils/farmData'
@@ -39,6 +39,13 @@ export interface HarvestHeader {
   harvestId: Hex   // "0x86bf..."
   product: string            // "cafe"
   startDate: bigint          // 1752298080n (segundos Unix)
+}
+
+export interface CertificateHeader {
+  lotId: bigint           // 1n
+  certKey: Hex           // "0x86bf..."
+  certType: Hex    // "0xf465..."
+  issuer: Address    // "0xf465..."
 }
 
 export default async function TracePage({ params }: TracePageProps) {
@@ -84,7 +91,7 @@ export default async function TracePage({ params }: TracePageProps) {
               No se encontró ningún lote con el ID #{lotId} en la blockchain.
               Verifica que el número de lote sea correcto.
             </p>
-            
+
             <div className="bg-red-100 rounded-lg p-4 mb-6 text-left">
               <h3 className="font-semibold text-red-800 mb-2">¿Qué puedes hacer?</h3>
               <ul className="text-sm text-red-700 space-y-1">
@@ -128,7 +135,20 @@ export default async function TracePage({ params }: TracePageProps) {
     toBlock: BigInt(8959110),
   })
 
+  const CertLogs = await publicClient.getContractEvents({
+    abi: certificatesContract.abi,
+    address: certificatesContract.address,
+    eventName: "CertificateLinked",
+    args: {
+      lotId: ArgsLot.id
+    },
+    fromBlock: BigInt(8959010),
+    toBlock: BigInt(8959110),
+  })
+
   console.log("HarvestCreated Logs:", HarvestLogs[0].args as HarvestHeader)
+
+  console.log("CertificateLinked Logs:", CertLogs)
 
   if (!HarvestLogs || HarvestLogs.length === 0) {
     return (
@@ -153,7 +173,7 @@ export default async function TracePage({ params }: TracePageProps) {
               No se encontraron registros de cosecha asociados al lote #{lotId}.
               Los datos de la cosecha pueden no estar disponibles aún.
             </p>
-            
+
             <div className="bg-orange-100 rounded-lg p-4 mb-6 text-left">
               <h3 className="font-semibold text-orange-800 mb-2">Posibles causas:</h3>
               <ul className="text-sm text-orange-700 space-y-1">
@@ -213,7 +233,7 @@ export default async function TracePage({ params }: TracePageProps) {
               No se encontraron los datos de la finca asociada a la cosecha del lote #{lotId}.
               La información del NFT de la finca puede no estar disponible temporalmente.
             </p>
-            
+
             <div className="bg-yellow-100 rounded-lg p-4 mb-6 text-left">
               <h3 className="font-semibold text-yellow-800 mb-2">Datos disponibles del lote:</h3>
               <ul className="text-sm text-yellow-700 space-y-2">
@@ -332,7 +352,7 @@ export default async function TracePage({ params }: TracePageProps) {
 
           {/* Traceability Components */}
           <section className="space-y-8">
-            <TraceabilityView 
+            <TraceabilityView
               lotId={lotId}
               farmData={FarmData}
               harvestData={{
@@ -344,6 +364,13 @@ export default async function TracePage({ params }: TracePageProps) {
                 amount: ArgsLot.amount,
                 owner: ArgsLot.owner
               }}
+              certificates={CertLogs.map(cert => ({
+                certType: cert.args.certType,
+                certKey: cert.args.certKey,
+                issuer: cert.args.issuer,
+                transactionHash: cert.transactionHash,
+                blockNumber: cert.blockNumber
+              }))}
             />
             <Trace lotId={lotId} />
           </section>
@@ -402,6 +429,14 @@ export default async function TracePage({ params }: TracePageProps) {
                     className="block w-full text-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-md"
                   >
                     🏡 Contrato FarmNFT ↗
+                  </a>
+                  <a
+                    href={`https://sepolia.etherscan.io/address/${certificatesContract.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-md"
+                  >
+                    🏆 Contrato Certificados ↗
                   </a>
                 </div>
               </div>

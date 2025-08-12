@@ -2,7 +2,7 @@
 
 import { FarmData } from '@/types'
 import { formatGeohash } from '@/utils/helpers'
-import { farmNFTContract } from '@/utils/constants'
+import { farmNFTContract, certificatesContract, CERTIFICATE_TYPES } from '@/utils/constants'
 
 interface TraceabilityViewProps {
   lotId: string
@@ -16,9 +16,16 @@ interface TraceabilityViewProps {
     amount: bigint
     owner: string
   }
+  certificates: Array<{
+    certType: string
+    certKey: string
+    issuer: string
+    transactionHash: string
+    blockNumber: bigint
+  }>
 }
 
-export default function TraceabilityView({ lotId, farmData, harvestData, lotData }: TraceabilityViewProps) {
+export default function TraceabilityView({ lotId, farmData, harvestData, lotData, certificates }: TraceabilityViewProps) {
   const formatTimestamp = (timestamp: bigint) => {
     return new Date(Number(timestamp) * 1000).toLocaleString('es-ES', {
       year: 'numeric',
@@ -31,6 +38,21 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  const getCertificateType = (certType: string) => {
+    switch (certType) {
+      case CERTIFICATE_TYPES.ORGANIC:
+        return { name: "Orgánico", emoji: "🌿", color: "green" }
+      case CERTIFICATE_TYPES.FAIR_TRADE:
+        return { name: "Comercio Justo", emoji: "🤝", color: "blue" }
+      default:
+        return { name: "Certificado", emoji: "📜", color: "gray" }
+    }
+  }
+
+  const truncateHash = (hash: string) => {
+    return `${hash.slice(0, 8)}...${hash.slice(-8)}`
   }
 
 
@@ -143,6 +165,78 @@ export default function TraceabilityView({ lotId, farmData, harvestData, lotData
           )}
         </div>
       </div>
+
+      {/* Certificates Section */}
+      {certificates.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-purple-200 p-8">
+          <h2 className="text-2xl font-bold text-purple-800 mb-6 flex items-center gap-2">
+            🏆 Certificaciones
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {certificates.map((cert, index) => {
+              const certInfo = getCertificateType(cert.certType)
+              return (
+                <div key={index} className={`bg-${certInfo.color}-50 rounded-xl p-6 border-2 border-${certInfo.color}-200`}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`w-16 h-16 bg-${certInfo.color}-100 rounded-full flex items-center justify-center`}>
+                      <span className="text-3xl">{certInfo.emoji}</span>
+                    </div>
+                    <div>
+                      <h3 className={`text-xl font-bold text-${certInfo.color}-800`}>
+                        {certInfo.name}
+                      </h3>
+                      <p className={`text-${certInfo.color}-600`}>
+                        Certificado Verificado en Blockchain
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className={`bg-white p-3 rounded-lg border border-${certInfo.color}-200`}>
+                      <div className={`text-${certInfo.color}-600 font-medium text-sm mb-1`}>
+                        👨‍💼 Emisor del Certificado
+                      </div>
+                      <div className={`text-${certInfo.color}-800 font-mono text-sm`}>
+                        {truncateAddress(cert.issuer)}
+                      </div>
+                    </div>
+
+                    <div className={`bg-white p-3 rounded-lg border border-${certInfo.color}-200`}>
+                      <div className={`text-${certInfo.color}-600 font-medium text-sm mb-1`}>
+                        🔑 Clave del Certificado
+                      </div>
+                      <div className={`text-${certInfo.color}-800 font-mono text-xs`}>
+                        {truncateHash(cert.certKey)}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-200">
+                      <div className="flex flex-col gap-2 text-xs">
+                        <a 
+                          href={`https://sepolia.etherscan.io/tx/${cert.transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          🔗 Ver Transacción en Etherscan ↗
+                        </a>
+                        <a 
+                          href={`https://sepolia.etherscan.io/address/${certificatesContract.address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          📜 Ver Contrato de Certificados ↗
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

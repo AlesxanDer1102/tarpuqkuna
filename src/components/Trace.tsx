@@ -1,5 +1,5 @@
 import { publicClient } from "@/utils/client"
-import { agroTraceContract, farmNFTContract } from "@/utils/constants"
+import { agroTraceContract, farmNFTContract, certificatesContract, CERTIFICATE_TYPES } from "@/utils/constants"
 import { parseAbiItem } from "viem"
 
 
@@ -31,6 +31,17 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
             harvestId: harvestId
         },
     }) : []
+
+    // Get CertificateLinked data
+    const CertificateLinked = await publicClient.getLogs({
+        fromBlock: BigInt(8959010),
+        toBlock: BigInt(8959110),
+        address: certificatesContract.address,
+        event: parseAbiItem("event CertificateLinked(uint256 indexed lotId, bytes32 indexed certKey, bytes32 certType, address issuer)"),
+        args: {
+            lotId: BigInt(lotId)
+        },
+    })
 
     const Delivered = await publicClient.getLogs({
         fromBlock: BigInt(8959010),
@@ -174,6 +185,17 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
         return `${hash.slice(0, length)}...${hash.slice(-length)}`
     }
 
+    const getCertificateType = (certType: string) => {
+        switch (certType) {
+            case CERTIFICATE_TYPES.ORGANIC:
+                return { name: "Orgánico", emoji: "🌿", color: "green" }
+            case CERTIFICATE_TYPES.FAIR_TRADE:
+                return { name: "Comercio Justo", emoji: "🤝", color: "blue" }
+            default:
+                return { name: "Certificado", emoji: "📜", color: "gray" }
+        }
+    }
+
     return (
         <div className="space-y-8">
             <div className="bg-white rounded-2xl shadow-lg border-2 border-green-200 p-8">
@@ -271,6 +293,87 @@ export default async function Trace({ lotId }: TraceabilityViewProps) {
                                 </a>
                                 <span className="text-gray-400 ml-1">↗</span>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Certificates Section */}
+                {CertificateLinked.length > 0 && (
+                    <div className="mb-8 p-6 bg-purple-50 rounded-xl border-2 border-purple-200">
+                        <h2 className="text-xl font-semibold text-purple-800 mb-4 flex items-center gap-2">
+                            🏆 Certificaciones del Lote
+                        </h2>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {CertificateLinked.map((cert, index) => {
+                                const certInfo = getCertificateType(cert.args.certType)
+                                return (
+                                    <div key={index} className={`bg-white p-4 rounded-xl border-2 border-${certInfo.color}-200`}>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <span className="text-2xl">{certInfo.emoji}</span>
+                                            <div>
+                                                <h3 className={`font-bold text-${certInfo.color}-800 text-lg`}>
+                                                    {certInfo.name}
+                                                </h3>
+                                                <p className={`text-${certInfo.color}-600 text-sm`}>
+                                                    Certificado Verificado
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-2 text-sm">
+                                            <div className={`text-${certInfo.color}-700`}>
+                                                <span className="font-medium">Emisor:</span>
+                                                <div className="font-mono text-xs mt-1">
+                                                    {truncateHash(cert.args.issuer)}
+                                                </div>
+                                            </div>
+                                            <div className={`text-${certInfo.color}-700`}>
+                                                <span className="font-medium">Clave del Certificado:</span>
+                                                <div className="font-mono text-xs mt-1">
+                                                    {truncateHash(cert.args.certKey)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500 space-y-1">
+                                            <div>
+                                                🔗 Transacción: 
+                                                <a 
+                                                    href={`https://sepolia.etherscan.io/tx/${cert.transactionHash}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 underline ml-1"
+                                                >
+                                                    {truncateHash(cert.transactionHash)}
+                                                </a>
+                                                <span className="text-gray-400 ml-1">↗</span>
+                                            </div>
+                                            <div>📦 Bloque: 
+                                                <a 
+                                                    href={`https://sepolia.etherscan.io/block/${cert.blockNumber}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 underline ml-1"
+                                                >
+                                                    #{cert.blockNumber.toString()}
+                                                </a>
+                                                <span className="text-gray-400 ml-1">↗</span>
+                                            </div>
+                                            <div>
+                                                📜 Contrato de Certificados: 
+                                                <a 
+                                                    href={`https://sepolia.etherscan.io/address/${certificatesContract.address}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 underline ml-1"
+                                                >
+                                                    Ver Contrato ↗
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
                 )}
